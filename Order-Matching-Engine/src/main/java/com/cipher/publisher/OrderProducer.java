@@ -3,9 +3,11 @@ package com.cipher.publisher;
 import static com.cipher.constants.KafkaConstants.PROCESSED_ORDER_PRODUCER;
 
 import com.cipher.bean.Order;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+@Slf4j
 public class OrderProducer implements DataProducer<Order> {
 
     private OrderProducer() {
@@ -14,6 +16,7 @@ public class OrderProducer implements DataProducer<Order> {
 
     @Override
     public void produce(Order order, Producer<String, Order> producer) {
+        log.info("Order: {}", order);
         producer.send(new ProducerRecord<>(PROCESSED_ORDER_PRODUCER, null, order));
     }
 

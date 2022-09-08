@@ -8,7 +8,7 @@ public interface KafkaConstants {
     /**
      * Kafka topics
      */
-    String ORDER_CONSUMER = "order";
-    String PROCESSED_ORDER_PRODUCER = "processedOrder";
-    String TRADE_PRODUCER = "trade";
+    String ORDER_PRODUCER = "order";
+    String PROCESSED_ORDER_CONSUMER = "processedOrder";
+    String TRADE_COMSUMER = "trade";
 }

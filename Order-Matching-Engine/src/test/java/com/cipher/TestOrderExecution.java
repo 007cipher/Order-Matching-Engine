@@ -20,32 +20,32 @@ public class TestOrderExecution {
 
     @Test
     public void submitOrders() {
-        Gson gson = new Gson();
-        JsonReader reader;
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-
-            URL resource = classLoader.getResource("orders.json");
-            if (resource == null) {
-                throw new IllegalArgumentException("file not found! orders.json");
-            }
-            File file = new File(resource.toURI());
-            reader = new JsonReader(new FileReader(file));
-        } catch (FileNotFoundException | URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        Order[] data = gson.fromJson(reader, Order[].class);
-        KafkaProducer<String, Order> producer = producer();
-        long start = System.currentTimeMillis();
-        System.out.println(start);
-        for (int i = 0; i < data.length; i++) {
-            Order order = data[i];
-            order.setId((long) (i + 1));
-            producer.send(new ProducerRecord<>("order", null, order));
-        }
-        long end = System.currentTimeMillis();
-        System.out.println(end);
-        System.out.println(end - start);
+//        Gson gson = new Gson();
+//        JsonReader reader;
+//        try {
+//            ClassLoader classLoader = getClass().getClassLoader();
+//
+//            URL resource = classLoader.getResource("orders.json");
+//            if (resource == null) {
+//                throw new IllegalArgumentException("file not found! orders.json");
+//            }
+//            File file = new File(resource.toURI());
+//            reader = new JsonReader(new FileReader(file));
+//        } catch (FileNotFoundException | URISyntaxException e) {
+//            throw new RuntimeException(e);
+//        }
+//        Order[] data = gson.fromJson(reader, Order[].class);
+//        KafkaProducer<String, Order> producer = producer();
+//        long start = System.currentTimeMillis();
+//        System.out.println(start);
+//        for (int i = 0; i < data.length; i++) {
+//            Order order = data[i];
+//            order.setId((long) (i + 1));
+//            producer.send(new ProducerRecord<>("order", null, order));
+//        }
+//        long end = System.currentTimeMillis();
+//        System.out.println(end);
+//        System.out.println(end - start);
     }
 
     private KafkaProducer<String, Order> producer() {

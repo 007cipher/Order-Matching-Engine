@@ -1,4 +1,4 @@
-package com.cipher.config;
+package com.cipher.serialization;
 
 import com.cipher.bean.Order;
 import com.google.gson.Gson;
@@ -10,6 +10,7 @@ import java.util.Map;
 
 @Slf4j
 public class OrderDeserializer implements Deserializer<Order> {
+
     private final Gson gson = new Gson();
 
     @Override

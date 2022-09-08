@@ -1,8 +1,7 @@
-#IDE file
-.idea/
-
-#target folder
+#folders
 target/
+db/
+.idea/
 
 # Compiled class file
 *.class
@@ -29,3 +28,6 @@ target/
 hs_err_pid*
 
 .DS_Store
+mvnw
+mvnw.cmd
+OrderService.iml

@@ -3,9 +3,11 @@ package com.cipher.publisher;
 import static com.cipher.constants.KafkaConstants.TRADE_PRODUCER;
 
 import com.cipher.bean.Trade;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
+@Slf4j
 public class TradeProducer implements DataProducer<Trade> {
 
     private TradeProducer() {
@@ -13,9 +15,9 @@ public class TradeProducer implements DataProducer<Trade> {
     }
 
     @Override
-    public void produce(Trade order, Producer<String, Trade> producer) {
-        producer.send(new ProducerRecord<>(TRADE_PRODUCER,
-                null, order));
+    public void produce(Trade trade, Producer<String, Trade> producer) {
+        log.info("Trade: {}", trade);
+        producer.send(new ProducerRecord<>(TRADE_PRODUCER, null, trade));
     }
 
     @Override

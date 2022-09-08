@@ -1,9 +1,9 @@
 package com.cipher.engine;
 
-import com.cipher.dto.OrderTradeDto;
 import com.cipher.bean.Order;
-import com.cipher.bean.Trade;
 import com.cipher.bean.OrderBook;
+import com.cipher.bean.Trade;
+import com.cipher.dto.OrderTradeDto;
 import com.cipher.enums.OrderStatus;
 import com.cipher.enums.Side;
 import com.cipher.services.OrderService;
@@ -97,9 +97,10 @@ public class MatchingEngine {
                 updatedOrder.setRemQty(updatedOrder.getRemQty().subtract(executedQty));
                 updatedOrder.setStatus(OrderStatus.EXECUTED);
             } else {
-                savedOrder.setRemQty(savedOrder.getRemQty().subtract(executedQty));
-                savedOrder.setStatus(OrderStatus.PARTIALLY_EXECUTED);
-                updatedOrder = savedOrder;
+                updatedOrder = orderService.detachOrder(savedOrder);
+                updatedOrder.setRemQty(savedOrder.getRemQty().subtract(executedQty));
+                updatedOrder.setStatus(OrderStatus.PARTIALLY_EXECUTED);
+                orderService.saveOrder(updatedOrder);
             }
             orderTradeDto.setOrder(order);
             orderTradeDto.getMatchedOrder().add(updatedOrder);

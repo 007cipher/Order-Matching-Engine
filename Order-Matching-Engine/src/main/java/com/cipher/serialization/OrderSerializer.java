@@ -1,7 +1,6 @@
-package com.cipher.config;
+package com.cipher.serialization;
 
 import com.cipher.bean.Order;
-import com.cipher.dto.OrderTradeDto;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.errors.SerializationException;
@@ -11,6 +10,7 @@ import java.util.Map;
 
 @Slf4j
 public class OrderSerializer implements Serializer<Order> {
+
     private final Gson gson = new Gson();
 
     @Override
@@ -21,10 +21,9 @@ public class OrderSerializer implements Serializer<Order> {
     public byte[] serialize(String topic, Order data) {
         try {
             if (data == null) {
-                System.out.println("Null received at serializing");
+                log.error("Null received at serializing");
                 return null;
             }
-            System.out.println("Serializing...");
             return gson.toJson(data).getBytes();
         } catch (Exception e) {
             throw new SerializationException("Error when serializing MessageDto to byte[]");

@@ -9,7 +9,6 @@ import org.redisson.api.RLiveObjectService;
 import org.redisson.api.condition.Conditions;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,11 +27,11 @@ public class OrderService {
         return detachedOrder;
     }
 
+    public Order detachOrder(Order order) {
+        return liveObjectService.detach(order);
+    }
+
     public Collection<Order> getOrders(String instrument, BigDecimal price, Side side, List<OrderStatus> orderStatuses) {
-        return liveObjectService.find(Order.class, Conditions.and(
-                Conditions.eq("instrument", instrument),
-                Conditions.eq("price", price),
-                Conditions.eq("side", side),
-                Conditions.in("status", orderStatuses)));
+        return liveObjectService.find(Order.class, Conditions.and(Conditions.eq("instrument", instrument), Conditions.eq("price", price), Conditions.eq("side", side), Conditions.in("status", orderStatuses)));
     }
 }

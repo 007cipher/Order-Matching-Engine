@@ -3,7 +3,6 @@ package com.cipher.consumer;
 import com.cipher.bean.Order;
 import com.cipher.bean.Trade;
 import com.cipher.config.KafkaConfig;
-import com.cipher.dto.OrderTradeDto;
 import com.cipher.services.ExecutionService;
 import com.cipher.services.OrderBookService;
 import lombok.extern.slf4j.Slf4j;

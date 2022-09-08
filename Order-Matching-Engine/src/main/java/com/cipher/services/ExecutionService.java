@@ -1,9 +1,9 @@
 package com.cipher.services;
 
-import com.cipher.bean.Trade;
-import com.cipher.factory.DataProducerFactory;
 import com.cipher.bean.Order;
+import com.cipher.bean.Trade;
 import com.cipher.dto.OrderTradeDto;
+import com.cipher.factory.DataProducerFactory;
 import com.cipher.publisher.DataProducer;
 import com.cipher.publisher.OrderProducer;
 import com.cipher.publisher.TradeProducer;
@@ -28,9 +28,10 @@ public class ExecutionService {
 
     public void submitOrder(Order order) {
         if (!OrderValidator.validateOrder(order)) {
-            log.error("Invalid order: " + order);
+            log.error("Invalid order: {}", order);
             return;
         }
+        log.info("order: {}", order);
         OrderTradeDto orderTradeDto = orderBookService.processOrder(order);
         publishData(orderTradeDto);
     }

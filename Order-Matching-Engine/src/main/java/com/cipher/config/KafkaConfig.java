@@ -2,6 +2,9 @@ package com.cipher.config;
 
 import com.cipher.bean.Order;
 import com.cipher.bean.Trade;
+import com.cipher.serialization.OrderDeserializer;
+import com.cipher.serialization.OrderSerializer;
+import com.cipher.serialization.TradeSerializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -24,7 +27,6 @@ public class KafkaConfig {
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrderDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(properties);
         consumer.subscribe(Collections.singletonList(ORDER_CONSUMER));
         return consumer;
@@ -33,11 +35,6 @@ public class KafkaConfig {
     public static Producer<String, Order> getOrderProducer() {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVER);
-        properties.put(ProducerConfig.ACKS_CONFIG, "all");
-        properties.put(ProducerConfig.RETRIES_CONFIG, 0);
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, OrderSerializer.class.getName());
         return new KafkaProducer<>(properties);
@@ -46,11 +43,6 @@ public class KafkaConfig {
     public static Producer<String, Trade> getTradeProducer() {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVER);
-        properties.put(ProducerConfig.ACKS_CONFIG, "all");
-        properties.put(ProducerConfig.RETRIES_CONFIG, 0);
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
-        properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
-        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, TradeSerializer.class.getName());
         return new KafkaProducer<>(properties);
