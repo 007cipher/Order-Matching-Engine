@@ -1,7 +1,7 @@
 package com.cipher.entities;
 
-import com.cipher.enums.OrderStatus;
-import com.cipher.enums.Side;
+import com.cipher.matching.engine.enums.OrderStatus;
+import com.cipher.matching.engine.enums.Side;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
