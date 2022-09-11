@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.cipher</groupId>
     <artifactId>Order-Matching-Engine-Test</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>OrderMatchingEngineTest</name>
     <description>It is for testing the order matching engine.</description>
     <properties>

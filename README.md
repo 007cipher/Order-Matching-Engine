@@ -1,26 +1,45 @@
-# Order-Matching-Engine
-This is an order matching engine for trading exchanges (Mainly for crypto trading exchanges).
+# Trading
+This is an order matching engine for trading exchanges (Mainly for crypto trading exchanges). It contains
+- Order-Matching-Engine
+- Order-Matching-Engine-Test
 
-## Prerequisites
+## [Order-Matching-Engine](Order-Matching-Engine)
+This is an order matching engine where [Order](Order-Matching-Engine/src/main/java/com/cipher/matching/engine/bean/Order.java) comes for execution
+
+### Prerequisites
 - Java 8 or above should be installed
-- Kafka should be running and configured in [KafkaConstants.java](src/main/java/com/cipher/constants/KafkaConstants.java)
 - Redis should be running and address should be configured in [RedisConfig.java](src/main/java/com/cipher/config/RedisConfig.java) (Currently redis is configured using single node only but it can be updated with cluster)
 
-## Technologies Used
+### Technologies Used
 Java 8,
-Kafka,
 Redis
-
-#### Kafka
-Configuration constants are defined in [KafkaConstants.java](src/main/java/com/cipher/constants/KafkaConstants.java)
 
 #### Redis
 Redis is using the default address (127.0.0.1) and port (6379)
 
-## Working
+### Working
 - To create the jar file use `mvn clean package`
-- Start the application using java -jar [Order-Matching-Engine-1.0.0.jar](target/Order-Matching-Engine-1.0.0.jar)
-- Once application starts, It started consuming the order from topic **order**
+- Then it can be used in any kind of project. Just need to add the jar file in build path (It can be added as a maven library)
+- Create a new object of **OrderExecutionService** and call the method **submitOrder** with an [Order](Order-Matching-Engine/src/main/java/com/cipher/matching/engine/bean/Order.java) object.
 - After some validation, it sends the order to **Matching Engine**
-- If order executes completely in matching engine it publish the order, against order and the trade using kafka (topics can be found in [KafkaConstants.java](src/main/java/com/cipher/constants/KafkaConstants.java))
-- If order not executed or partially executed that the order will be stored in redis until it gets cancelled or executed.
+- Once order will be processed by the **Matching Engine** the **submitOrder** method will return an [OrderTradeDto](Order-Matching-Engine/src/main/java/com/cipher/matching/engine/dto/OrderTradeDto.java) with the processed order, matched orders and trades.
+- If order not executed or partially executed then the order will be stored in redis until it gets cancelled or executed.
+
+## [Order-Matching-Engine-Test](Order-Matching-Engine-Test)
+This is an spring boot application to test and demonstrate that how we can use the matching engine.
+
+### Prerequisites
+- Java 8 or above should be installed
+
+### Technologies Used
+Java 8, Spring-Boot, H2 Database
+
+#### Spring-Boot
+Spring-Boot configuration is available in [application.properties](Order-Matching-Engine-Test/src/main/resources/application.properties) file.
+
+#### H2 Database
+H2 Database configuration is available in [application.properties](Order-Matching-Engine-Test/src/main/resources/application.properties) file.
+
+### Working
+- To create the jar file use `mvn clean package`
+- Then it can be started using `java -jar target/Order-Matching-Engine-Test-1.0.0.jar`
