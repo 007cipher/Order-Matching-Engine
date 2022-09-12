@@ -8,7 +8,7 @@ This is an order matching engine where [Order](Order-Matching-Engine/src/main/ja
 
 ### Prerequisites
 - Java 8 or above should be installed
-- Redis should be running and address should be configured in [RedisConfig.java](src/main/java/com/cipher/config/RedisConfig.java) (Currently redis is configured using single node only but it can be updated with cluster)
+- Redis should be running and address should be configured in [RedisConfig.java](Order-Matching-Engine/src/main/java/com/cipher/matching/engine/config/RedisConfig.java) (Currently redis is configured using single node only but it can be updated with cluster)
 
 ### Technologies Used
 Java 8,
