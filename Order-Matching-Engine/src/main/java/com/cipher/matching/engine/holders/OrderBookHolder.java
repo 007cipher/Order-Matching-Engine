@@ -1,10 +1,10 @@
-package com.cipher.matching.engine.services;
+package com.cipher.matching.engine.holders;
 
 import com.cipher.matching.engine.bean.Order;
 import com.cipher.matching.engine.bean.OrderBook;
 import com.cipher.matching.engine.config.RedisConfig;
 import com.cipher.matching.engine.dto.OrderTradeDto;
-import com.cipher.matching.engine.engine.MatchingEngine;
+import com.cipher.matching.engine.core.MatchingEngine;
 import com.cipher.matching.engine.enums.Side;
 import com.cipher.matching.engine.exception.IllegalAccessException;
 import lombok.extern.slf4j.Slf4j;
@@ -17,26 +17,25 @@ import java.math.BigDecimal;
 import java.util.*;
 
 @Slf4j
-public final class OrderBookService {
+public final class OrderBookHolder {
 
     private static final RedissonClient redissonClient = RedisConfig.getRedissonClient();
 
     private static final String ORDER_BOOK = "orderBook";
 
     {
-        InstrumentService instrumentService = new InstrumentService();
-        List<String> instruments = instrumentService.getInstruments();
+        List<String> instruments = InstrumentHolder.getInstruments();
         instruments.forEach(instrument -> initializeOrderBookWithInstruments(instrument));
         log.info("Instrument initialization done");
     }
 
-    private OrderBookService() throws IllegalAccessException {
-        if (OrderBookServiceHolder.orderBookService != null)
+    private OrderBookHolder() throws IllegalAccessException {
+        if (OrderBookInstanceHolder.ORDER_BOOK_HOLDER != null)
             throw new IllegalAccessException("Object already available!");
     }
 
-    public static OrderBookService getInstance() throws IllegalAccessException {
-        return OrderBookServiceHolder.orderBookService;
+    public static OrderBookHolder getInstance() throws IllegalAccessException {
+        return OrderBookInstanceHolder.ORDER_BOOK_HOLDER;
     }
 
     private static void initializeOrderBookWithInstruments(String instrument) {
@@ -73,12 +72,32 @@ public final class OrderBookService {
         return orderTradeDto;
     }
 
+    public Order cancelOrder(Order order) {
+        RMap<String, Map<Side, Map<BigDecimal, OrderBook>>> orderBooks = redissonClient.getMap(ORDER_BOOK);
+        RReadWriteLock rReadWriteLock = orderBooks.getReadWriteLock(order.getInstrument());
+        RLock rLock = rReadWriteLock.writeLock();
+        Order cancelledOrder = null;
+        try {
+            rLock.lock();
+            log.debug("Order {} Locked by {}", order, Thread.currentThread().getName());
+            cancelledOrder = MatchingEngine.cancelOrder(order, orderBooks);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (rLock.isLocked()) {
+                rLock.unlock();
+                log.debug("Unlocked");
+            }
+        }
+        return cancelledOrder;
+    }
+
     public Map<Side, Map<BigDecimal, OrderBook>> getOrderBook(String instrument) {
         RMap<String, Map<Side, Map<BigDecimal, OrderBook>>> orderBooks = redissonClient.getMap(ORDER_BOOK);
         return orderBooks.get(instrument);
     }
 
-    private static final class OrderBookServiceHolder {
-        static final OrderBookService orderBookService = new OrderBookService();
+    private static final class OrderBookInstanceHolder {
+        static final OrderBookHolder ORDER_BOOK_HOLDER = new OrderBookHolder();
     }
 }

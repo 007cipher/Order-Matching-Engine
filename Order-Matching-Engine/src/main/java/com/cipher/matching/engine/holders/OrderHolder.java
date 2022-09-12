@@ -1,4 +1,4 @@
-package com.cipher.matching.engine.services;
+package com.cipher.matching.engine.holders;
 
 import com.cipher.matching.engine.bean.Order;
 import com.cipher.matching.engine.config.RedisConfig;
@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Slf4j
-public class OrderService {
+public class OrderHolder {
 
     private final RLiveObjectService liveObjectService = RedisConfig.getLiveObjectService();
 
@@ -29,6 +29,10 @@ public class OrderService {
 
     public Order detachOrder(Order order) {
         return liveObjectService.detach(order);
+    }
+
+    public Order findById(Long orderId) {
+        return liveObjectService.get(Order.class, orderId);
     }
 
     public Collection<Order> getOrders(String instrument, BigDecimal price, Side side, List<OrderStatus> orderStatuses) {

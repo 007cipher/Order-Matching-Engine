@@ -1,23 +1,29 @@
 package com.cipher;
 
 import com.cipher.entities.Order;
+import com.cipher.handler.CommandHandler;
+import com.cipher.matching.engine.CommandExecutor;
 import com.cipher.matching.engine.dto.OrderTradeDto;
-import com.cipher.matching.engine.services.OrderExecutionService;
-import com.cipher.services.AfterExecutionHandler;
+import com.cipher.handler.AfterExecutionHandler;
 import com.cipher.services.OrderService;
+import com.cipher.services.TradeService;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,39 +36,30 @@ public class Bootstrap implements ApplicationListener<ApplicationEvent> {
     private OrderService orderService;
 
     @Autowired
-    private AfterExecutionHandler afterExecutionHandler;
+    private CommandHandler commandHandler;
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ApplicationStartedEvent) {
             ExecutorService executorService = Executors.newFixedThreadPool(100);
             Gson gson = new Gson();
-            JsonReader reader;
+            String reader = "";
+            ClassPathResource cpr = new ClassPathResource("orders.json");
             try {
-                reader = new JsonReader(new FileReader(ResourceUtils.getFile("classpath:orders.json")));
-            } catch (FileNotFoundException e) {
+                byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
+                reader = new String(bdata, StandardCharsets.UTF_8);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             Order[] data = gson.fromJson(reader, Order[].class);
             long startTime = System.currentTimeMillis();
-            OrderExecutionService executionService = new OrderExecutionService();
-            for (int i = 0; i < data.length; i++) {
-                Order saveOrder = orderService.saveOrder(data[i]);
+            Arrays.stream(data).forEach(order -> {
+                Order saveOrder = orderService.saveOrder(order);
                 CompletableFuture.runAsync(() -> {
-                    com.cipher.matching.engine.bean.Order executableOrder = createExecutableOrder(saveOrder);
-                    log.info("Executable Order: {}", executableOrder);
-                    OrderTradeDto orderTradeDto = executionService.submitOrder(executableOrder);
-                    afterExecutionHandler.orderTradeDtoHandler(orderTradeDto);
+                    commandHandler.handlePlaceOrderCommand(saveOrder);
                 }, executorService);
-            }
-//            Arrays.stream(data).forEach(order -> {
-//
-//            });
+            });
             log.info("Time taken: {}", System.currentTimeMillis() - startTime);
         }
-    }
-
-    com.cipher.matching.engine.bean.Order createExecutableOrder(Order order) {
-        return new com.cipher.matching.engine.bean.Order(order.getId(), order.getInstrument(), order.getQty(), order.getRemQty(), order.getPrice(), order.getSide(), order.getStatus());
     }
 }

@@ -1,4 +1,4 @@
-package com.cipher.matching.engine.engine;
+package com.cipher.matching.engine.core;
 
 import com.cipher.matching.engine.bean.Order;
 import com.cipher.matching.engine.bean.OrderBook;
@@ -6,7 +6,7 @@ import com.cipher.matching.engine.bean.Trade;
 import com.cipher.matching.engine.dto.OrderTradeDto;
 import com.cipher.matching.engine.enums.OrderStatus;
 import com.cipher.matching.engine.enums.Side;
-import com.cipher.matching.engine.services.OrderService;
+import com.cipher.matching.engine.holders.OrderHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RMap;
 
@@ -16,7 +16,7 @@ import java.util.*;
 @Slf4j
 public class MatchingEngine {
 
-    private static final OrderService orderService = new OrderService();
+    private static final OrderHolder ORDER_HOLDER = new OrderHolder();
 
     private MatchingEngine() {
 
@@ -87,19 +87,19 @@ public class MatchingEngine {
     }
 
     private static void updateOrder(Order order, OrderBook orderBook, BigDecimal executedQty, OrderTradeDto orderTradeDto) {
-        Collection<Order> orders = orderService.getOrders(orderBook.getInstrument(), orderBook.getPrice(),
+        Collection<Order> orders = ORDER_HOLDER.getOrders(orderBook.getInstrument(), orderBook.getPrice(),
                 orderBook.getSide(), Arrays.asList(OrderStatus.OPEN, OrderStatus.PARTIALLY_EXECUTED));
         orders.forEach(savedOrder -> {
             Order updatedOrder;
             if (executedQty.compareTo(savedOrder.getRemQty()) >= 0) {
-                updatedOrder = orderService.deleteOrder(savedOrder);
+                updatedOrder = ORDER_HOLDER.deleteOrder(savedOrder);
                 updatedOrder.setRemQty(updatedOrder.getRemQty().subtract(executedQty));
                 updatedOrder.setStatus(OrderStatus.EXECUTED);
             } else {
-                updatedOrder = orderService.detachOrder(savedOrder);
+                updatedOrder = ORDER_HOLDER.detachOrder(savedOrder);
                 updatedOrder.setRemQty(savedOrder.getRemQty().subtract(executedQty));
                 updatedOrder.setStatus(OrderStatus.PARTIALLY_EXECUTED);
-                orderService.saveOrder(updatedOrder);
+                ORDER_HOLDER.saveOrder(updatedOrder);
             }
             orderTradeDto.setOrder(order);
             orderTradeDto.getMatchedOrder().add(updatedOrder);
@@ -117,7 +117,28 @@ public class MatchingEngine {
             orderBook = new OrderBook(order.getInstrument(), order.getRemQty(), price, order.getSide());
         }
         oneSideOrderBook.put(price, orderBook);
-        orderService.saveOrder(order);
+        ORDER_HOLDER.saveOrder(order);
+    }
+
+    public static Order cancelOrder(Order order, RMap<String, Map<Side, Map<BigDecimal, OrderBook>>> orderBooks) {
+        Map<Side, Map<BigDecimal, OrderBook>> orderBook = orderBooks.get(order.getInstrument());
+        Map<BigDecimal, OrderBook> buySideOrderBook = orderBook.get(Side.BUY);
+        Map<BigDecimal, OrderBook> sellSideOrderBook = orderBook.get(Side.SELL);
+        Order saveOrder = ORDER_HOLDER.findById(order.getId());
+        if (saveOrder == null) {
+            throw new RuntimeException("Order not exists with id: " + order.getId());
+        }
+        log.debug("saved order: {}", saveOrder);
+        if (saveOrder.getSide().equals(Side.BUY)) {
+            deleteFromOrderBook(saveOrder, saveOrder.getRemQty(), buySideOrderBook);
+        } else {
+            deleteFromOrderBook(saveOrder, saveOrder.getRemQty(), sellSideOrderBook);
+        }
+        Order detachedOrder = ORDER_HOLDER.deleteOrder(saveOrder);
+        detachedOrder.setStatus(OrderStatus.CANCELLED);
+        log.debug("cancelled order: {}", detachedOrder);
+        orderBooks.put(order.getInstrument(), orderBook);
+        return detachedOrder;
     }
 
     private static void deleteFromOrderBook(Order order, BigDecimal qty, Map<BigDecimal, OrderBook> oneSideOrderBook) {

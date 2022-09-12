@@ -1,8 +1,6 @@
 package com.cipher.services;
 
-import com.cipher.entities.Order;
 import com.cipher.entities.Trade;
-import com.cipher.enums.OrderStatus;
 import com.cipher.repositories.TradeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

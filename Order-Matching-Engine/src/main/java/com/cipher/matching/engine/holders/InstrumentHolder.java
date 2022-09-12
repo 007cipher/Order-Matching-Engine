@@ -1,10 +1,13 @@
-package com.cipher.matching.engine.services;
+package com.cipher.matching.engine.holders;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class InstrumentService {
+@Slf4j
+public class InstrumentHolder {
 
     private static final List<String> instruments = new ArrayList<>();
 
@@ -20,8 +23,12 @@ public class InstrumentService {
         instruments.add("XRPETH");
     }
 
-    public List<String> getInstruments() {
+    public static List<String> getInstruments() {
         return Collections.unmodifiableList(instruments);
     }
 
+    public static boolean validateInstrument(String instrument) {
+        log.debug("Instruments: {}", instruments);
+        return instruments.contains(instrument);
+    }
 }
